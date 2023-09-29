@@ -33,19 +33,16 @@ impl DepKey {
     }
 }
 trait GhDepContainer {
-    fn get_ghdep_info(&self, dep: &str, key: DepKey, default: &str) -> String;
+    fn get_ghdep_info(&self, dep: &str, key: DepKey) -> Option<String>;
     fn get_all_deps(&self) -> Vec<String>;
 }
 impl GhDepContainer for Table {
-    fn get_ghdep_info(&self, dep: &str, key: DepKey, default: &str) -> String {
-        let default_value = toml::Value::String(default.to_string());
+    fn get_ghdep_info(&self, dep: &str, key: DepKey) -> Option<String> {
         let key = format!("{}_{}", dep.to_uppercase(), key.as_full_postfix().as_str());
         let value = self
-            .get::<String>(&key)
-            .unwrap_or_else(|| &default_value)
-            .as_str()
-            .unwrap_or_else(|| default);
-        return value.to_string();
+            .get::<String>(&key)?
+            .as_str()?;
+        return Some(value.to_string());
     }
     fn get_all_deps(&self) -> Vec<String>{
         let postfix = DepKey::Project.as_full_postfix();
@@ -72,18 +69,20 @@ impl Dep {
     fn from_table(table: &Table, dep: &str) -> Self {
         let v = Version::from_str(table.get_ghdep_info(
             dep,
-            DepKey::Version,
-            "").as_str()).ok();
+            DepKey::Version)
+            .unwrap_or_default()
+            .as_str()).ok();
         let vr = VersionReq::from_str(table.get_ghdep_info(
             dep,
-            DepKey::VersionReq,
-            "").as_str()).ok();
+            DepKey::VersionReq)
+            .unwrap_or_default()
+            .as_str()).ok();
         return Self {
             name: dep.to_string(),
-            project: table.get_ghdep_info(dep, DepKey::Project, ""),
+            project: table.get_ghdep_info(dep, DepKey::Project).unwrap_or_default(),
             version_req: vr,
             current_version: v,
-            tag_prefix: table.get_ghdep_info(dep, DepKey::TagPrefix, ""),
+            tag_prefix: table.get_ghdep_info(dep, DepKey::TagPrefix).unwrap_or_default(),
             available_tags: vec![],
             available_versions: vec![],
             best_version: None
