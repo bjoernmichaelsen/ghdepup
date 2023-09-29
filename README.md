@@ -1,4 +1,4 @@
-# ghdepup
+# ghdepup (git hub dep up), the four four time dependency updater
 
 A minimal tool to update dependencies based on tags published on github that is easy to integrate in any kind of toolchain.
 
@@ -11,8 +11,10 @@ For a more universal tool -- e.g. sourcing repositories outside of github -- see
 
 This project aims to provide and update information on tags and releases on github in a way that is easy to integrate into most toolchains and environments. As such it outputs and is configured with a subset of the syntax of [toml](https://github.com/toml-lang/toml) in UTF-8 encoding. So these files should parse as:
 * a [POSIX sh](https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html) environment setup script
-* a form of minimal [INI file](https://en.wikipedia.org/wiki/INI_file) (using double quotes)
+* a form of minimal [INI file](https://en.wikipedia.org/wiki/INI_file) (using double quoted values)
 * a form of [Makefile](https://en.wikipedia.org/wiki/Make_(software)) setting up variables
+
+In addition, the project should:
 * stay as much as possible in simple, rust-only build environment
 * enable updates via e.g. github actions to create (and possibly automerge) PRs for dependency updates.
 
