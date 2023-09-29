@@ -119,17 +119,11 @@ impl Dep {
             &self.version_req);
     }
 }
-fn to_string(ver: &Option<Version>) -> String {
-    match ver {
-        None => "".to_string(),
-        Some(v) => v.to_string()
-    }
-}
 impl std::fmt::Display for Dep {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}_VERSION=\"{}\"",
             self.name.to_ascii_uppercase(),
-            to_string(&self.best_version)
+            self.best_version.as_ref().map(|v| v.to_string()).unwrap_or_default()
         )
     }
 }
@@ -147,11 +141,11 @@ impl std::fmt::Debug for Dep {
 ",
             self.name,
             self.project,
-            to_string(&self.current_version),
+            self.current_version.as_ref().map(|v| v.to_string()).unwrap_or_default(),
             self.available_tags.join(", "),
             available_versions.join(", "),
             self.name.to_ascii_uppercase(),
-            to_string(&self.best_version)
+            &self.best_version.as_ref().map(|v| v.to_string()).unwrap_or_default()
         )
     }
 }
