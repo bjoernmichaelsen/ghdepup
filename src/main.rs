@@ -160,12 +160,12 @@ enum ConfigError {
 impl std::fmt::Debug for ConfigError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let formatted = match self {
-            Self::TooFewArgs(args) => format!("at least two config files needed, but only {} found.", args),
-            Self::NoOutputFile() => format!("no output file."),
-            Self::ConfigReadError(filename) => format!("error reading config file: {}.", filename),
-            Self::FromUtf8Error() => format!("config is not valid utf8."),
+            Self::TooFewArgs(args) => format!("at least two config files needed, but only {} found", args),
+            Self::NoOutputFile() => format!("no output file"),
+            Self::ConfigReadError(filename) => format!("error reading config file: {}", filename),
+            Self::FromUtf8Error() => format!("config is not valid utf8"),
             Self::TomlParseError(e) => format!("config cant be parsed as toml: {}", e),
-            Self::GithubTokenMissing() => format!("GITHUB_TOKEN environment variable is missing or unset.")
+            Self::GithubTokenMissing() => format!("GITHUB_TOKEN environment variable is missing or unset")
         };
         write!(f, "{}", formatted)
     }
@@ -217,13 +217,13 @@ enum GetTagsError {
 impl std::fmt::Debug for GetTagsError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let formatted = match self {
-            Self::ExpectedJsonArrayError() => format!("json array not found where expected in response."),
-            Self::ExpectedJsonName() => format!("name not found where expected in json response."),
-            Self::ExpectedJsonObjectError() => format!("object not found where expected in json response."),
+            Self::ExpectedJsonArrayError() => format!("json array not found where expected in response"),
+            Self::ExpectedJsonName() => format!("name not found where expected in json response"),
+            Self::ExpectedJsonObjectError() => format!("object not found where expected in json response"),
             Self::FromUtf8Error(e) => format!("error parsing response as UTF8: {}.", e),
-            Self::HyperError(e) => format!("hyper error: {}.", e),
-            Self::HyperHttpError(e) => format!("hyper http error: {}.", e),
-            Self::HyperHttpStatusError(e) => format!("unexpected http status: {}.", e),
+            Self::HyperError(e) => format!("hyper error: {}", e),
+            Self::HyperHttpError(e) => format!("hyper http error: {}", e),
+            Self::HyperHttpStatusError(e) => format!("unexpected http status: {}", e),
             Self::JsonParseError() => format!("error parsing json response"),
             Self::MultipleGithubErrors(errs) => {
                 errs.iter()
