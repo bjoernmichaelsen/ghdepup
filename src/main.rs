@@ -211,6 +211,7 @@ enum GetTagsError {
     HyperError(hyper::Error),
     HyperHttpError(hyper::http::Error),
     HyperHttpStatusError(hyper::http::StatusCode),
+    HyperHttpUnauthorizedError(hyper::http::StatusCode),
     JsonParseError(),
     MultipleGithubErrors(Vec<String>)
 }
@@ -224,6 +225,7 @@ impl std::fmt::Debug for GetTagsError {
             Self::HyperError(e) => format!("hyper error: {}", e),
             Self::HyperHttpError(e) => format!("hyper http error: {}", e),
             Self::HyperHttpStatusError(e) => format!("unexpected http status: {}", e),
+            Self::HyperHttpUnauthorizedError(e) => format!("http status unauthorized (maybe your github token expired?): {}", e),
             Self::JsonParseError() => format!("error parsing json response"),
             Self::MultipleGithubErrors(errs) => {
                 errs.iter()
@@ -279,7 +281,12 @@ async fn get_repo_tags_json(project: &str, token: &str) -> Result<String, GetTag
         .await
         .map_err(|e| GetTagsError::HyperError(e))?;
     return match res.status().is_success() {
-        false => { Err(GetTagsError::HyperHttpStatusError(res.status())) },
+        false => {
+            Err(match res.status().as_u16() {
+                401 => GetTagsError::HyperHttpUnauthorizedError(res.status()),
+                _ => GetTagsError::HyperHttpStatusError(res.status())
+            })
+        },
         true => {
             let body = res.into_body();
             let buf = hyper::body::to_bytes(body)
@@ -325,8 +332,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     let mut token = env::var("GITHUB_TOKEN")
         .or(Err(Box::new(ConfigError::GithubTokenMissing()) as Box<dyn std::error::Error>))?;
     token.pop();
-    let config_result : Result<(toml::Table, String), ConfigError>= setup_config(&env::args().collect_vec()).await;
-    let (config, outfile) = config_result.unwrap();
+    let (config, outfile) = setup_config(&env::args().collect_vec()).await
+        .map_err(|e| Box::new(e))?;
     let mut deps = config.get_all_deps().iter()
         .map(|depname| Dep::from_table(&config, depname))
         .collect_vec();
