@@ -154,7 +154,8 @@ enum ConfigError {
     NoOutputFile(),
     ConfigReadError(String),
     FromUtf8Error(),
-    TomlParseError(toml::de::Error)
+    TomlParseError(toml::de::Error),
+    GithubTokenMissing()
 }
 impl std::fmt::Debug for ConfigError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -163,11 +164,19 @@ impl std::fmt::Debug for ConfigError {
             Self::NoOutputFile() => format!("no output file."),
             Self::ConfigReadError(filename) => format!("error reading config file: {}.", filename),
             Self::FromUtf8Error() => format!("config is not valid utf8."),
-            Self::TomlParseError(e) => format!("config cant be parsed as toml: {}", e)
+            Self::TomlParseError(e) => format!("config cant be parsed as toml: {}", e),
+            Self::GithubTokenMissing() => format!("GITHUB_TOKEN environment variable is missing or unset.")
         };
         write!(f, "{}", formatted)
     }
 }
+impl std::fmt::Display for ConfigError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+impl std::error::Error for ConfigError {}
+
 async fn setup_config(args: &Vec<String>) -> Result<(toml::Table, String), ConfigError> {
     let input_file_names = args.iter()
         .skip(1)
@@ -193,6 +202,7 @@ async fn setup_config(args: &Vec<String>) -> Result<(toml::Table, String), Confi
         .or_else(|e| Err(ConfigError::TomlParseError(e)))?;
     Ok((config, output_file_name))
 }
+
 enum GetTagsError {
     ExpectedJsonArrayError(),
     ExpectedJsonName(),
@@ -201,9 +211,10 @@ enum GetTagsError {
     HyperError(hyper::Error),
     HyperHttpError(hyper::http::Error),
     HyperHttpStatusError(hyper::http::StatusCode),
-    JsonParseError()
+    JsonParseError(),
+    MultipleGithubErrors(Vec<String>)
 }
-impl std::fmt::Display for GetTagsError {
+impl std::fmt::Debug for GetTagsError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let formatted = match self {
             Self::ExpectedJsonArrayError() => format!("json array not found where expected in response."),
@@ -213,11 +224,23 @@ impl std::fmt::Display for GetTagsError {
             Self::HyperError(e) => format!("hyper error: {}.", e),
             Self::HyperHttpError(e) => format!("hyper http error: {}.", e),
             Self::HyperHttpStatusError(e) => format!("unexpected http status: {}.", e),
-            Self::JsonParseError() => format!("error parsing json response")
+            Self::JsonParseError() => format!("error parsing json response"),
+            Self::MultipleGithubErrors(errs) => {
+                errs.iter()
+                    .map(|e| format!("{}", e))
+                    .join("\n")
+            }
         };
         write!(f, "{}", formatted)
     }
 }
+impl std::fmt::Display for GetTagsError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+impl std::error::Error for GetTagsError {}
+
 fn get_tag_name(entry: &Value) -> Result<&str, GetTagsError> {
     entry
         .as_object()
@@ -275,15 +298,6 @@ async fn update_tags_from_gh(dep: &mut Dep, token: &str) -> Result<(), GetTagsEr
     dep.available_tags = tags;
     Ok(())
 }
-fn panic_github_error(updates: &Vec<Result<(), GetTagsError>>) {
-    let fails = updates.iter()
-        .filter_map(|update| -> Option<String> {
-                let e = update.as_ref().err()?;
-                Some(format!("{}", e))
-        })
-        .join("\n");
-    panic!("failed to update tags from github:\n{}", fails);
-}
 #[cfg(feature="print_debug")]
 async fn print_debug(deps: &Vec<Dep>) {
     deps.iter().for_each(|dep| {
@@ -308,7 +322,8 @@ async fn write_outfile(_: &Vec<Dep>, _: &str) {}
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>>{
-    let mut token = env::var("GITHUB_TOKEN").expect("fatal: GITHUB_TOKEN environment variable not set.");
+    let mut token = env::var("GITHUB_TOKEN")
+        .or(Err(Box::new(ConfigError::GithubTokenMissing()) as Box<dyn std::error::Error>))?;
     token.pop();
     let config_result : Result<(toml::Table, String), ConfigError>= setup_config(&env::args().collect_vec()).await;
     let (config, outfile) = config_result.unwrap();
@@ -320,7 +335,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     });
     let updates = join_all(updates).await.into_iter().collect_vec();
     if !updates.iter().all(|result| result.is_ok()) {
-        panic_github_error(&updates);
+        let e : Box<dyn std::error::Error> = Box::new(GetTagsError::MultipleGithubErrors(
+            updates.iter()
+                .filter_map(|r|{
+                    r.as_ref().err().map(|e| format!("{}", e))
+                })
+                .collect_vec()
+        ));
+        return Err(e);
     }
     deps.iter_mut().for_each(|dep| {
         dep.update_versions_from_tags();
