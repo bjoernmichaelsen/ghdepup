@@ -1,0 +1,30 @@
+name: selfupdate check
+run-name: selfupdate 🚀 check
+on: [push, workflow_dispatch]
+jobs:
+  Selfupdate-Check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Updating self
+        uses: ./.github/actions/selfupdate/
+        env:
+          GITHUB_TOKEN: ${{ secrets.GLOBAL_READ_GITHUB_TOKEN }}
+      - name: Push results to pull request
+        run: |
+          git config --global --add safe.directory /github/workspace
+          git checkout -b selfupdate
+          git diff
+          git add ghversions.toml Cargo.toml .github/actions/selfupdate/Cargo.toml
+          git config user.email "bjoern.michaelsen@libreoffice.org"
+          git config user.name "Bjoern Michaelsen (ghdepup selfupdate)"
+          git commit -m "update dependencies"
+          git show
+          git push origin -f selfupdate
+          gh pr create --title "chose(deps): update deps" --body ""
+        env:
+          GH_TOKEN: ${{ github.token }}

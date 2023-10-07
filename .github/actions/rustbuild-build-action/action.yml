@@ -1,0 +1,13 @@
+name: 'Rust build'
+description: 'Build with rust'
+inputs:
+  rust-image-tag:
+    description: 'Tag of the official rust image to use'
+    required: false
+    default: 'latest'
+runs:
+  using: 'docker'
+  image: rust:latest
+  entrypoint: cargo
+  args:
+    - build

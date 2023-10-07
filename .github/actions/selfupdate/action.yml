@@ -1,0 +1,6 @@
+name: '🔁 Self update'
+description: 'Update own dependencies'
+runs:
+  using: 'docker'
+  image: rust:latest
+  entrypoint: ./.github/actions/selfupdate/selfupdate.sh
