@@ -88,8 +88,8 @@ impl Dep {
             best_version: None
         }
     }
-    fn get_versions_from_tags(tags: &Vec<String>, tag_prefix: &str) -> Vec<Version> {
-        tags.iter().filter_map(|tag| {
+    fn get_versions_from_tags(tags: Vec<&str>, tag_prefix: &str) -> Vec<Version> {
+        tags.iter().filter_map(|&tag| {
             if !tag.starts_with(tag_prefix) {
                 return None;
             }
@@ -99,7 +99,9 @@ impl Dep {
     }
     fn update_versions_from_tags(&mut self) {
         self.available_versions = Dep::get_versions_from_tags(
-            &self.available_tags,
+            self.available_tags.iter()
+                .map(|t| t.as_str())
+                .collect_vec(),
             self.tag_prefix.as_str());
     }
     fn get_best_version(versions: &Vec<Version>, version_req: &Option<VersionReq>) -> Option<Version> {
