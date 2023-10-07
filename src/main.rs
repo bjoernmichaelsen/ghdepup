@@ -179,7 +179,7 @@ impl std::fmt::Display for ConfigError {
 }
 impl std::error::Error for ConfigError {}
 
-async fn setup_config(args: &Vec<String>) -> Result<(toml::Table, String), ConfigError> {
+async fn setup_config(args: Vec<&str>) -> Result<(toml::Table, String), ConfigError> {
     let input_file_names = args.iter()
         .skip(1)
         .collect_vec();
@@ -189,11 +189,11 @@ async fn setup_config(args: &Vec<String>) -> Result<(toml::Table, String), Confi
     let output_file_name = args
         .last()
         .ok_or(ConfigError::NoOutputFile())?
-        .clone();
+        .to_string();
     let mut buf = vec![];
     for &f in input_file_names.iter() {
         let mut c = tokio::fs::read(f).await
-            .or(Err(ConfigError::ConfigReadError(f.clone())))?
+            .or(Err(ConfigError::ConfigReadError(f.to_string())))?
             .clone();
         buf.append(c.as_mut());
         buf.push(b'\n');
@@ -334,7 +334,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     let mut token = env::var("GITHUB_TOKEN")
         .or(Err(Box::new(ConfigError::GithubTokenMissing()) as Box<dyn std::error::Error>))?;
     token.pop();
-    let (config, outfile) = setup_config(&env::args().collect_vec()).await
+    let args = env::args().collect_vec();
+    let (config, outfile) = setup_config(
+        args.iter().map(|a| a.as_str()).collect_vec()
+    ).await
         .map_err(|e| Box::new(e))?;
     let mut deps = config.get_all_deps().iter()
         .map(|depname| Dep::from_table(&config, depname))
