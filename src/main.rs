@@ -366,6 +366,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
 }
 #[cfg(test)]
 mod tests {
+    use std::ops::Deref;
+
     use itertools::join;
     use toml::Table;
 
@@ -433,13 +435,13 @@ HYPER_TLS_GH_VERSION=\"0.5.0\"
     }
     #[tokio::test]
     async fn test_get_versions_from_tags() {
-        let tags =vec![
+        let tags: Vec<&str> =vec![
                 "foo111",
                 "bar2",
                 "v1.2.3",
                 "2.3.4",
-                "v3.4.5"].iter().map(|&s| {s.to_string()}).collect_vec();
-        let versions = Dep::get_versions_from_tags(&tags, "v");
+                "v3.4.5"];
+        let versions = Dep::get_versions_from_tags(tags, "v");
         assert_eq!(
             join(versions, ", "),
             "1.2.3, 3.4.5");
@@ -451,9 +453,9 @@ HYPER_TLS_GH_VERSION=\"0.5.0\"
                 "3.4.0",
                 "3.4.5",
                 "4.5.6"].iter().map(|&s| {Version::parse(s).unwrap()}).collect_vec();
-        let version_req = VersionReq::from_str(">=3, <4").ok();
+        let version_req = VersionReq::from_str(">=3, <4").unwrap();
         assert_eq!(
-            Dep::get_best_version(&versions, &version_req),
+            Dep::get_best_version(versions.iter().collect_vec(), Some(&version_req)),
             Version::parse("3.4.5").ok());
     }
 }
