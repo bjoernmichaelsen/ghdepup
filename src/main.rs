@@ -104,21 +104,21 @@ impl Dep {
                 .collect_vec(),
             self.tag_prefix.as_str());
     }
-    fn get_best_version(versions: &Vec<Version>, version_req: &Option<VersionReq>) -> Option<Version> {
+    fn get_best_version(versions: Vec<&Version>, version_req: Option<&VersionReq>) -> Option<Version> {
         versions.iter()
-            .filter(|&v| {
+            .filter(|&&v| {
                 match &version_req {
                     None => true,
-                    Some(vr) => vr.matches(v)
+                    Some(vr) => vr.matches(&v)
                 }
             })
             .max()
-            .and_then(|v| Some(v.clone()))
+            .and_then(|&v| Some(v.clone()))
     }
     fn update_best_version(&mut self) {
         self.best_version = Dep::get_best_version(
-            &self.available_versions,
-            &self.version_req);
+            self.available_versions.iter().collect_vec(),
+            self.version_req.as_ref());
     }
 }
 impl std::fmt::Display for Dep {
