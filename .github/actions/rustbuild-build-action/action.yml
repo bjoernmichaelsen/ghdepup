@@ -7,5 +7,5 @@ inputs:
     default: 'latest'
 runs:
   using: 'docker'
-  image: rust:${{ inputs.rust-image-tag }}
+  image: rust:latest
   entrypoint: 'cargo build'
