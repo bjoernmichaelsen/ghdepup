@@ -8,4 +8,4 @@ inputs:
 runs:
   using: 'docker'
   image: rust:latest
-  entrypoint: ['cargo' 'build']
+  entrypoint: /usr/local/bin/cargo/bin/cargo build
