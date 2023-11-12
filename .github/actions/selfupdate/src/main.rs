@@ -1,6 +1,6 @@
 use std::{env, fs, str::FromStr, collections::HashMap};
 
-use toml::{Table, Value};
+use toml::Value;
 
 fn read_versions(path: &str) -> std::collections::HashMap<String, String> {
     let filecontents = fs::read_to_string(path).expect("could not read versions");
