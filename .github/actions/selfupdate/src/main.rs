@@ -38,7 +38,6 @@ fn update_entry_version(entry: &mut toml::Table, new_version: &str) {
 fn update_deps(deps: &mut toml::map::Map<String, Value>, versions: &HashMap<String, String>) {
     versions.iter().for_each(|new_entry| {
         let entry = deps.get_mut(new_entry.0).and_then(Value::as_table_mut);
-        println!("entry found for dep {}: {:#?}", new_entry.0, entry);
         if let Some(e) = entry {
             update_entry_version(e, new_entry.1);
             deps[new_entry.0] = Value::from(e.to_owned());
@@ -58,7 +57,6 @@ fn update_cargo(path: &str, versions: &HashMap<String, String>) {
     update_deps(&mut deps, versions);
     table[DEPENDENCIES_KEY] = Value::from(deps.clone());
     let out_cargo = toml::ser::to_string_pretty(&table).ok().unwrap();
-    println!("cargo at {}, modified with {:?}: toml::: {}", path, versions, out_cargo);
     let mut outfile = fs::File::create(path).ok().unwrap();
     outfile.write_all(out_cargo.as_bytes()).ok().unwrap();
 }
@@ -74,6 +72,10 @@ fn main() {
     get_ghdepup_contents(depsfile.as_str(), versionsfile.as_str(), &mut contents);
     let mut crate_versions = std::collections::HashMap::new();
     get_crate_versions(&contents, &mut crate_versions);
+    println!("Found the following crate versions to update to:");
+    crate_versions.iter().for_each(|e| {
+        println!("{:<30}{}", e.0, e.1)
+    });
     let cargofiles: Vec<String> = env::args().skip(3).collect();
     cargofiles.iter()
         .for_each(|c| {update_cargo(c, &crate_versions);});
