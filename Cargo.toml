@@ -7,7 +7,7 @@ features = ["full"]
 version = "0.14.29"
 
 [dependencies.hyper-tls]
-version = "0.6.0"
+version = "0.5.0"
 
 [dependencies.itertools]
 version = "0.13.0"
