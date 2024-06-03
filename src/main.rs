@@ -123,7 +123,7 @@ impl Dep {
 }
 impl std::fmt::Display for Dep {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}_VERSION=\"{}\"",
+        write!(f, "{}_GH_VERSION=\"{}\"",
             self.name.to_ascii_uppercase(),
             self.best_version.as_ref().map(|v| v.to_string()).unwrap_or_default()
         )
@@ -139,7 +139,7 @@ impl std::fmt::Debug for Dep {
 # previous version: {}
 # with tags: {}
 # with versions: {}
-{}_VERSION=\"{}\"
+{}_GH_VERSION=\"{}\"
 ",
             self.name,
             self.project,
@@ -331,9 +331,8 @@ async fn write_outfile(_: &Vec<Dep>, _: &str) {}
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>>{
-    let mut token = env::var("GITHUB_TOKEN")
+    let token = env::var("GITHUB_TOKEN")
         .or(Err(Box::new(ConfigError::GithubTokenMissing()) as Box<dyn std::error::Error>))?;
-    token.pop();
     let args = env::args().collect_vec();
     let (config, outfile) = setup_config(
         args.iter().map(|a| a.as_str()).collect_vec()
@@ -366,8 +365,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
 }
 #[cfg(test)]
 mod tests {
-    use std::ops::Deref;
-
     use itertools::join;
     use toml::Table;
 
