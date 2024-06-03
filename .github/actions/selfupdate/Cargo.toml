@@ -6,7 +6,7 @@ features = [
     "parse",
     "display",
 ]
-version = "0.22.14"
+version = "0.8.14"
 
 [package]
 edition = "2021"
