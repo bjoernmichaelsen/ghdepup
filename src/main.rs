@@ -1,5 +1,4 @@
 use futures::future::join_all;
-use hyper_tls::HttpsConnector;
 use hyper::Client;
 use hyper::Request;
 use itertools::Itertools;
@@ -268,8 +267,7 @@ async fn parse_tags_json(json_to_parse: &str) -> Result<Vec<String>, GetTagsErro
         .collect_vec())
 }
 async fn get_repo_tags_json(project: &str, token: &str) -> Result<String, GetTagsError> {
-    let https = HttpsConnector::new();
-    let client = Client::builder().build::<_, hyper::Body>(https);
+    let client = Client::builder().http2_only(true).build_http();
     let url = format!("https://api.github.com/repos/{}/tags", project);
     let req = Request::builder()
         .uri(url)
