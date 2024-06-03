@@ -1,10 +1,14 @@
+[dependencies.serde]
+version = "1.0.203"
+
+[dependencies.toml]
+features = [
+    "parse",
+    "display",
+]
+version = "0.22.14"
+
 [package]
+edition = "2021"
 name = "selfupdate"
 version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-toml = { version = "0.8.0", features = ["parse", "display"] }
-serde = { version = "1.0" }

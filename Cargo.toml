@@ -1,22 +1,48 @@
-[package]
-name = "ghdepup"
-version = "0.1.0"
-edition = "2021"
+[dependencies.futures]
+features = ["std"]
+version = ""
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[dependencies.hyper]
+features = ["full"]
+version = "0.14.29"
+
+[dependencies.hyper-tls]
+version = "0.6.0"
+
+[dependencies.itertools]
+version = "0.13.0"
+
+[dependencies.semver]
+version = ""
+
+[dependencies.serde]
+version = "1.0.203"
+
+[dependencies.serde_json]
+features = ["std"]
+version = "1.0"
+
+[dependencies.tokio]
+features = [
+    "full",
+    "rt",
+    "macros",
+]
+version = ""
+
+[dependencies.toml]
+features = [
+    "parse",
+    "display",
+]
+version = "0.22.14"
 
 [features]
 default = ["write_outfile"]
-write_outfile = []
 print_debug = []
+write_outfile = []
 
-[dependencies]
-hyper = { version = "0.14", features = ["full"] }
-hyper-tls = { version = "0.5.0" }
-tokio = { version = "1", features = ["full", "rt", "macros"] }
-serde = { version = "1.0" }
-serde_json = { version = "1.0", features = ["std"] }
-itertools = { version = "0.11.0" }
-semver =  { version = "1.0.18" }
-toml = { version = "0.8.0", features = ["parse", "display"] }
-futures = { version = "0.3.5", features = ["std"] }
+[package]
+edition = "2021"
+name = "ghdepup"
+version = "0.1.0"
