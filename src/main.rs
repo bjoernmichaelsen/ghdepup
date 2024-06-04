@@ -329,7 +329,7 @@ async fn print_debug(_: &Vec<Dep>) {}
 #[cfg(feature="write_outfile")]
 async fn write_outfile(deps: &Vec<Dep>, outfile: &str) {
     let formatted = deps.iter()
-        .map(|d| format!("{}\r\n", d))
+        .map(|d| format!("{}\n", d))
         .reduce(|acc, el| acc + el.as_str())
         .unwrap_or("".to_string());
     tokio::fs::write(outfile, formatted.as_bytes())
