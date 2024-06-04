@@ -268,9 +268,10 @@ async fn parse_tags_json(json_to_parse: &str) -> Result<Vec<String>, GetTagsErro
         .collect_vec())
 }
 async fn get_repo_tags_json(project: &str, token: &str, page: i32) -> Result<String, GetTagsError> {
+    const PER_PAGE : i32 = 100;
     let https = HttpsConnector::new();
     let client = Client::builder().build::<_, hyper::Body>(https);
-    let url = format!("https://api.github.com/repos/{}/tags?per_page=100&page={}", project, page);
+    let url = format!("https://api.github.com/repos/{}/tags?per_page={}&page={}", project, PER_PAGE, page);
     let req = Request::builder()
         .uri(url)
         .header("Accept", "application/vnd.github+json")
