@@ -1,0 +1,26 @@
+name: post merge checks
+run-name: post merge checks
+on:
+  push:
+    branches: [ main ]
+jobs:
+  Post-Merge-Check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Install stable rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: build ghdepup
+        run: cargo build
+      - name: test ghdepup
+        run: cargo test
+      - name: build selfupdate
+        run: cargo build
+        working-directory: ./.github/actions/selfupdate
+      - name: test selfupdate
+        run: cargo test
+        working-directory: ./.github/actions/selfupdate
