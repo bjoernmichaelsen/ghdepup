@@ -1,11 +1,11 @@
 name: 🔍 merge checks
 run-name: 🔍 merge checks
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
       - 'feature/**'
-
 jobs:
   merge_check:
     name: 🔍 merge checks
