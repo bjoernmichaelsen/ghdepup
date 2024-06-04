@@ -1,26 +1,30 @@
-name: post merge checks
-run-name: post merge checks
+name: 🔍 merge checks
+run-name: 🔍 merge checks
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - 'feature/**'
+
 jobs:
-  Post-Merge-Check:
+  merge_check:
+    name: 🔍 merge checks
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code
+      - name: ⏬ Check out repository code
         uses: actions/checkout@v4
-      - name: Install stable rust
+      - name: ⏬ Install stable rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
-      - name: build ghdepup
+      - name: 🛠 Build ghdepup
         run: cargo build
-      - name: test ghdepup
+      - name: 🧪 Test ghdepup
         run: cargo test
-      - name: build selfupdate
+      - name: 🛠 Build selfupdate
         run: cargo build
         working-directory: ./.github/actions/selfupdate
-      - name: test selfupdate
+      - name: 🧪 Test selfupdate
         run: cargo test
         working-directory: ./.github/actions/selfupdate

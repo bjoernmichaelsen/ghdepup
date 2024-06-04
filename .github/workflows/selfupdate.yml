@@ -1,33 +1,34 @@
-name: selfupdate check
-run-name: selfupdate 🚀 check
+name: ☥ selfupdate check
+run-name: ☥ selfupdate check
 on:
   schedule:
     - cron: '0 2 * * *'
 jobs:
   Selfupdate-Check:
+    name: ☥ Selfupdate check
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
     steps:
-      - name: Check out repository code
+      - name: ⏬ Check out repository code
         uses: actions/checkout@v4
-      - name: Updating self
+      - name: 🛠 Updating self
         uses: ./.github/actions/selfupdate/
         env:
           GITHUB_TOKEN: ${{ secrets.GLOBAL_READ_GITHUB_TOKEN }}
-      - name: Push results to pull request
+      - name: 📦 Push results to pull request
         run: |
           git config --global --add safe.directory /github/workspace
-          git checkout -b selfupdate
-          git status
+          git checkout -b feature/selfupdate
+          git status  
           git diff
           git add ghversions.toml Cargo.toml .github/actions/selfupdate/Cargo.toml
           git config user.email "bjoern.michaelsen@libreoffice.org"
           git config user.name "Bjoern Michaelsen (ghdepup selfupdate)"
           git commit -m "update dependencies"
           git show
-          git push origin -f selfupdate
+          git push origin -f feature/selfupdate
           gh pr create --title "chore(deps): update deps" --body "" || true
         env:
           GH_TOKEN: ${{ github.token }}
