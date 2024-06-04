@@ -28,7 +28,7 @@ features = [
     "rt",
     "macros",
 ]
-version = "1.38"
+version = "1.38.0"
 
 [dependencies.toml]
 features = [
