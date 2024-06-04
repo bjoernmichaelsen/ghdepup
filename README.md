@@ -57,6 +57,10 @@ This is not required, but the file has to exist. After parsing all these files, 
 
 Some debugging can be enabled by toogling features to `cargo` in the build. They might be described here later.
 
+## self updating
+
+Instead of using `cargo update`, ghdepup updates itself via ghdepup, see `.github/workflow/selfupdate.yml`. For most projects this would be pointless, but here it is just to test ghdepup itself.
+
 ## licensing
 
 See LICENSE file in the root directory of the repository.
