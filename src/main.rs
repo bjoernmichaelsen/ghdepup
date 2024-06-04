@@ -267,10 +267,10 @@ async fn parse_tags_json(json_to_parse: &str) -> Result<Vec<String>, GetTagsErro
         .map(str::to_owned)
         .collect_vec())
 }
-async fn get_repo_tags_json(project: &str, token: &str) -> Result<String, GetTagsError> {
+async fn get_repo_tags_json(project: &str, token: &str, page: i32) -> Result<String, GetTagsError> {
     let https = HttpsConnector::new();
     let client = Client::builder().build::<_, hyper::Body>(https);
-    let url = format!("https://api.github.com/repos/{}/tags", project);
+    let url = format!("https://api.github.com/repos/{}/tags?per_page=100&page={}", project, page);
     let req = Request::builder()
         .uri(url)
         .header("Accept", "application/vnd.github+json")
@@ -300,10 +300,19 @@ async fn get_repo_tags_json(project: &str, token: &str) -> Result<String, GetTag
     }
 }
 async fn update_tags_from_gh(dep: &mut Dep, token: &str) -> Result<(), GetTagsError> {
-    let json = get_repo_tags_json(dep.project.as_str(), token)
-        .await?;
-    let tags = parse_tags_json(json.as_str())
-        .await?;
+    let mut tags : Vec<String> = vec![];
+    let mut page = 1;
+    loop {
+        let json = get_repo_tags_json(dep.project.as_str(), token, page)
+            .await?;
+        let mut new_tags = parse_tags_json(json.as_str()).await?;
+        if new_tags.len() > 0 {
+            page = page + 1;
+            tags.append(&mut new_tags);
+        } else {
+            break;
+        }
+    }
     dep.available_tags = tags;
     Ok(())
 }
@@ -435,10 +444,10 @@ HYPER_TLS_GH_VERSION=\"0.5.0\"
         let tags: Vec<&str> =vec![
                 "foo111",
                 "bar2",
-                "v1.2.3",
-                "2.3.4",
-                "v3.4.5"];
-        let versions = Dep::get_versions_from_tags(tags, "v");
+                "toml-v1.2.3",
+                "v2.3.4",
+                "toml-v3.4.5"];
+        let versions = Dep::get_versions_from_tags(tags, "toml-v");
         assert_eq!(
             join(versions, ", "),
             "1.2.3, 3.4.5");
