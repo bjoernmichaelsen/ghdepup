@@ -1,11 +1,17 @@
 name: 🔍 merge checks
 run-name: 🔍 merge checks
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
-      - 'feature/**'
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+    branches:
+      - main
 jobs:
   merge_check:
     name: 🔍 merge checks
