@@ -22,6 +22,7 @@ jobs:
         run: |
           git config --global --add safe.directory /github/workspace
           git checkout -b selfupdate
+          git status
           git diff
           git add ghversions.toml Cargo.toml .github/actions/selfupdate/Cargo.toml
           git config user.email "bjoern.michaelsen@libreoffice.org"
