@@ -31,5 +31,6 @@ jobs:
           git show
           git push origin -f feature/selfupdate
           gh pr create --title "chore(deps): update deps" --body "" || true
+          gh workflow run merge-checks.yml --ref feature/selfupdate
         env:
           GH_TOKEN: ${{ github.token }}
