@@ -1,12 +1,12 @@
 [dependencies.serde]
-version = "1.0.204"
+version = "1.0.205"
 
 [dependencies.toml]
 features = [
     "parse",
     "display",
 ]
-version = "0.8.14"
+version = "0.8.19"
 
 [package]
 edition = "2021"
